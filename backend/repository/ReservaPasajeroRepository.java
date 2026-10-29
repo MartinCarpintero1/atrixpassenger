@@ -2,6 +2,7 @@
 package com.atrixpassenger.backend.repository;
 
 import com.atrixpassenger.backend.entity.ReservaPasajero;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
@@ -19,4 +20,9 @@ public interface ReservaPasajeroRepository
     );
 
     long countByReserva_IdReserva(Integer idReserva);
+
+    // Cantidad de pasajeros que ya realizaron el check-in.
+    long countByReserva_IdReservaAndCheckInRealizadoTrue(
+        Integer idReserva
+    );
 }

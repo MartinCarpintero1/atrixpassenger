@@ -1,4 +1,3 @@
-
 package com.atrixpassenger.backend.entity;
 
 import jakarta.persistence.*;

@@ -1,14 +1,15 @@
-
 package com.atrixpassenger.backend.service;
 
 import com.atrixpassenger.backend.entity.Pasajero;
 import com.atrixpassenger.backend.entity.Reserva;
 import com.atrixpassenger.backend.entity.Reserva.EstadoReserva;
 import com.atrixpassenger.backend.entity.ReservaPasajero;
+
 import com.atrixpassenger.backend.repository.PasajeroRepository;
 import com.atrixpassenger.backend.repository.ReservaPasajeroRepository;
 import com.atrixpassenger.backend.repository.ReservaRepository;
 
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -33,42 +34,55 @@ public class ReservaPasajeroService {
         this.pasajeroRepository = pasajeroRepository;
     }
 
+    @Transactional(readOnly = true)
     public List<ReservaPasajero> listarTodos() {
         return reservaPasajeroRepository.findAll();
     }
 
+    @Transactional(readOnly = true)
     public ReservaPasajero buscarPorId(Integer id) {
         return reservaPasajeroRepository.findById(id)
-            .orElseThrow(() -> new ResponseStatusException(
-                HttpStatus.NOT_FOUND,
-                "No se encontró la asociación con ID: " + id
-            ));
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "No se encontró la asociación con ID: " + id
+                ));
     }
 
+    @Transactional(readOnly = true)
     public List<ReservaPasajero> listarPorReserva(Integer idReserva) {
+
         if (!reservaRepository.existsById(idReserva)) {
             throw new ResponseStatusException(
-                HttpStatus.NOT_FOUND,
-                "No se encontró la reserva con ID: " + idReserva
+                    HttpStatus.NOT_FOUND,
+                    "No se encontró la reserva con ID: " + idReserva
             );
         }
 
-        return reservaPasajeroRepository.findByReserva_IdReserva(idReserva);
+        return reservaPasajeroRepository
+                .findByReserva_IdReserva(idReserva);
     }
 
+    @Transactional(readOnly = true)
     public List<ReservaPasajero> listarPorPasajero(Integer idPasajero) {
+
         if (!pasajeroRepository.existsById(idPasajero)) {
             throw new ResponseStatusException(
-                HttpStatus.NOT_FOUND,
-                "No se encontró el pasajero con ID: " + idPasajero
+                    HttpStatus.NOT_FOUND,
+                    "No se encontró el pasajero con ID: " + idPasajero
             );
         }
 
-        return reservaPasajeroRepository.findByPasajero_IdPasajero(idPasajero);
+        return reservaPasajeroRepository
+                .findByPasajero_IdPasajero(idPasajero);
     }
+
+    // ---------------------------------------------------------
+    // ASOCIAR PASAJERO
+    // ---------------------------------------------------------
 
     @Transactional
     public ReservaPasajero asociar(ReservaPasajero datos) {
+
         if (datos == null
                 || datos.getReserva() == null
                 || datos.getReserva().getIdReserva() == null
@@ -76,53 +90,57 @@ public class ReservaPasajeroService {
                 || datos.getPasajero().getIdPasajero() == null) {
 
             throw new ResponseStatusException(
-                HttpStatus.BAD_REQUEST,
-                "Debés indicar una reserva y un pasajero existentes."
+                    HttpStatus.BAD_REQUEST,
+                    "Debés indicar una reserva y un pasajero existentes."
             );
         }
 
         Integer idReserva = datos.getReserva().getIdReserva();
         Integer idPasajero = datos.getPasajero().getIdPasajero();
 
-        Reserva reserva = reservaRepository.findById(idReserva)
-            .orElseThrow(() -> new ResponseStatusException(
-                HttpStatus.NOT_FOUND,
-                "No se encontró la reserva con ID: " + idReserva
-            ));
+        // Bloquea la reserva antes de contar los pasajeros.
+        Reserva reserva = reservaRepository
+                .buscarPorIdConBloqueo(idReserva)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "No se encontró la reserva con ID: " + idReserva
+                ));
 
         Pasajero pasajero = pasajeroRepository.findById(idPasajero)
-            .orElseThrow(() -> new ResponseStatusException(
-                HttpStatus.NOT_FOUND,
-                "No se encontró el pasajero con ID: " + idPasajero
-            ));
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "No se encontró el pasajero con ID: " + idPasajero
+                ));
 
         if (reserva.getEstadoReserva() == EstadoReserva.Cancelada) {
             throw new ResponseStatusException(
-                HttpStatus.CONFLICT,
-                "No se pueden asociar pasajeros a una reserva cancelada."
+                    HttpStatus.CONFLICT,
+                    "No se pueden asociar pasajeros a una reserva cancelada."
             );
         }
 
         boolean yaExiste =
-            reservaPasajeroRepository
-                .existsByReserva_IdReservaAndPasajero_IdPasajero(
-                    idReserva, idPasajero
-                );
+                reservaPasajeroRepository
+                        .existsByReserva_IdReservaAndPasajero_IdPasajero(
+                                idReserva,
+                                idPasajero
+                        );
 
         if (yaExiste) {
             throw new ResponseStatusException(
-                HttpStatus.CONFLICT,
-                "Este pasajero ya está asociado a la reserva."
+                    HttpStatus.CONFLICT,
+                    "Este pasajero ya está asociado a la reserva."
             );
         }
 
         long cantidadAsociada =
-            reservaPasajeroRepository.countByReserva_IdReserva(idReserva);
+                reservaPasajeroRepository
+                        .countByReserva_IdReserva(idReserva);
 
         if (cantidadAsociada >= reserva.getCantidadPasajeros()) {
             throw new ResponseStatusException(
-                HttpStatus.CONFLICT,
-                "La reserva ya tiene asociados todos los pasajeros permitidos."
+                    HttpStatus.CONFLICT,
+                    "La reserva ya tiene asociados todos los pasajeros permitidos."
             );
         }
 
@@ -131,8 +149,19 @@ public class ReservaPasajeroService {
         datos.setPasajero(pasajero);
         datos.setCheckInRealizado(false);
 
-        return reservaPasajeroRepository.save(datos);
+        try {
+            return reservaPasajeroRepository.saveAndFlush(datos);
+        } catch (DataIntegrityViolationException e) {
+            throw new ResponseStatusException(
+                    HttpStatus.CONFLICT,
+                    "No se pudo asociar el pasajero. Es posible que ya esté asociado a esta reserva."
+            );
+        }
     }
+
+    // ---------------------------------------------------------
+    // CHECK-IN
+    // ---------------------------------------------------------
 
     @Transactional
     public ReservaPasajero actualizarCheckIn(
@@ -141,18 +170,28 @@ public class ReservaPasajeroService {
 
         if (realizado == null) {
             throw new ResponseStatusException(
-                HttpStatus.BAD_REQUEST,
-                "Debés indicar si el check-in fue realizado."
+                    HttpStatus.BAD_REQUEST,
+                    "Debés indicar si el check-in fue realizado."
             );
         }
 
         ReservaPasajero asociacion = buscarPorId(id);
 
-        if (asociacion.getReserva().getEstadoReserva()
-                == EstadoReserva.Cancelada) {
+        Integer idReserva =
+                asociacion.getReserva().getIdReserva();
+
+        // Bloqueamos la reserva para evitar cambios simultáneos.
+        Reserva reserva = reservaRepository
+                .buscarPorIdConBloqueo(idReserva)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "No se encontró la reserva asociada."
+                ));
+
+        if (reserva.getEstadoReserva() == EstadoReserva.Cancelada) {
             throw new ResponseStatusException(
-                HttpStatus.CONFLICT,
-                "No se puede modificar el check-in de una reserva cancelada."
+                    HttpStatus.CONFLICT,
+                    "No se puede modificar el check-in de una reserva cancelada."
             );
         }
 
@@ -161,14 +200,28 @@ public class ReservaPasajeroService {
         return reservaPasajeroRepository.save(asociacion);
     }
 
+    // ---------------------------------------------------------
+    // DESASOCIAR PASAJERO
+    // ---------------------------------------------------------
+
     @Transactional
     public void desasociar(Integer id) {
+
         ReservaPasajero asociacion = buscarPorId(id);
+
+        Integer idReserva =
+                asociacion.getReserva().getIdReserva();
+
+        reservaRepository.buscarPorIdConBloqueo(idReserva)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "No se encontró la reserva asociada."
+                ));
 
         if (Boolean.TRUE.equals(asociacion.getCheckInRealizado())) {
             throw new ResponseStatusException(
-                HttpStatus.CONFLICT,
-                "No se puede desasociar un pasajero que ya realizó el check-in."
+                    HttpStatus.CONFLICT,
+                    "No se puede desasociar un pasajero que ya realizó el check-in."
             );
         }
 
