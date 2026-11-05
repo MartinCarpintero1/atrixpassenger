@@ -1,3 +1,4 @@
+
 package com.atrixpassenger.backend.controller;
 
 import org.springframework.web.bind.annotation.GetMapping;
@@ -21,12 +22,16 @@ public class HealthController {
     public Map<String, Object> checkHealth() {
 
         try {
-            jdbcTemplate.queryForObject("SELECT 1", Integer.class);
+            String database = jdbcTemplate.queryForObject(
+                "SELECT current_database()",
+                String.class
+            );
 
             return Map.of(
                 "status", "UP",
                 "backend", "OK",
-                "database", "CONNECTED"
+                "database", "CONNECTED",
+                "databaseName", database
             );
 
         } catch (Exception e) {
