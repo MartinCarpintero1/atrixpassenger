@@ -1,4 +1,5 @@
-import { useEffect, useState } from 'react'
+
+import { Link } from 'react-router-dom'
 import '../App.css'
 
 const activities = [
@@ -34,13 +35,7 @@ const activities = [
   },
 ]
 
-function App() {
-  const [backend, setBackend] = useState({
-    status: 'checking',
-    database: '',
-  })
-
-
+function Promocional() {
   return (
     <div className="app-shell" id="inicio">
       <header className="site-header">
@@ -58,9 +53,9 @@ function App() {
           <a href="#como-funciona">Cómo funciona</a>
         </nav>
 
-        <a className="button button-outline header-button" href="/admin/login">
+        <Link className="button button-outline header-button" to="/login">
           Ingresar
-        </a>
+        </Link>
       </header>
 
       <main>
@@ -84,6 +79,7 @@ function App() {
               <a className="button button-primary" href="#actividades">
                 Explorar actividades <span aria-hidden="true">→</span>
               </a>
+
               <a className="button button-light" href="#como-funciona">
                 Conocer más
               </a>
@@ -178,9 +174,9 @@ function App() {
                     <strong>{activity.price}</strong>
                   </div>
 
-                  <a className="activity-link" href="#acceso">
+                  <Link className="activity-link" to="/login">
                     Conocer más <span aria-hidden="true">→</span>
-                  </a>
+                  </Link>
                 </div>
               </article>
             ))}
@@ -223,12 +219,24 @@ function App() {
             <span className="eyebrow">ÁREA DE USUARIOS</span>
             <h2>Tu espacio de viaje</h2>
             <p>
-              El acceso para pasajeros, operadores y administradores
-              se implementará en una próxima etapa.
+              Accedé a tu cuenta para organizar tus reservas o administrar
+              las operaciones de la empresa.
             </p>
-          </div>
 
-          <span className="access-status">Acceso en desarrollo</span>
+            <div className="hero-actions access-actions">
+              <Link className="button button-primary" to="/login">
+                Acceso pasajeros
+              </Link>
+
+              <Link className="button button-light" to="/registro">
+                Crear cuenta
+              </Link>
+
+              <Link className="button button-outline" to="/admin/login">
+                Acceso administrativo
+              </Link>
+            </div>
+          </div>
         </section>
       </main>
 
@@ -242,11 +250,9 @@ function App() {
         </a>
 
         <p>Una mejor forma de organizar tus viajes.</p>
-
-    
       </footer>
     </div>
   )
 }
 
-export default App
+export default Promocional
