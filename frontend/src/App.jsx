@@ -1,4 +1,3 @@
-
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
 
 import Promocional from './pages/Promocional'
@@ -19,7 +18,6 @@ function App() {
         <Route path="/" element={<Promocional />} />
         <Route path="/admin/login" element={<AdminLogin />} />
         <Route path="/admin" element={<AdminDashboard />} />
-        <Route path="*" element={<Navigate to="/" replace />} />
         <Route path="/admin/destinos" element={<Destinos />} />
         <Route path="/admin/actividades" element={<Actividades />} />
         <Route path="/admin/salidas" element={<Salidas />} />
@@ -27,6 +25,9 @@ function App() {
         <Route path="/admin/vehiculos" element={<Vehiculos />} />
         <Route path="/admin/pasajeros" element={<Pasajeros />} />
         <Route path="/admin/reservas" element={<Reservas />} />
+        
+        {/* El comodín de redirección SIEMPRE debe ir al final */}
+        <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </BrowserRouter>
   )
