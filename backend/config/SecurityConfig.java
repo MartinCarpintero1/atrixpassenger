@@ -4,8 +4,10 @@ import com.atrixpassenger.backend.security.CustomUserDetailsService;
 import com.atrixpassenger.backend.security.JwtAuthenticationFilter;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.Ordered;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -23,6 +25,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import org.springframework.web.filter.CorsFilter;
 
 import java.util.Arrays;
 import java.util.List;
@@ -76,20 +79,23 @@ public class SecurityConfig {
     }
 
     // ---------------------------------------------------------
-    // CORS
+    // CORS Configuration Source
     // ---------------------------------------------------------
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
 
         // Se normalizan los orígenes: sin espacios y sin "/" final
-        List<String> origins = Arrays.stream(allowedOrigins.split(","))
+        String originsValue = (allowedOrigins != null && !allowedOrigins.isBlank()) 
+                ? allowedOrigins 
+                : "https://atrixpassenger.vercel.app";
+
+        List<String> origins = Arrays.stream(originsValue.split(","))
                 .map(String::trim)
                 .map(origin -> origin.replaceAll("/+$", ""))
                 .filter(origin -> !origin.isBlank())
                 .toList();
 
-        // Uso de setAllowedOrigins para emparejar exactamente los dominios
         configuration.setAllowedOrigins(origins);
         configuration.setAllowedMethods(
                 List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
@@ -103,6 +109,19 @@ public class SecurityConfig {
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
         return source;
+    }
+
+    /**
+     * Registra el filtro CORS con la máxima prioridad para que se ejecute 
+     * antes de cualquier filtro de seguridad de Spring Security.
+     */
+    @Bean
+    public FilterRegistrationBean<CorsFilter> corsFilter() {
+        FilterRegistrationBean<CorsFilter> bean = new FilterRegistrationBean<>(
+                new CorsFilter(corsConfigurationSource())
+        );
+        bean.setOrder(Ordered.HIGHEST_PRECEDENCE);
+        return bean;
     }
 
     // ---------------------------------------------------------
