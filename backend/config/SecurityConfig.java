@@ -1,3 +1,4 @@
+
 package com.atrixpassenger.backend.config;
 
 import com.atrixpassenger.backend.security.CustomUserDetailsService;
@@ -6,6 +7,8 @@ import com.atrixpassenger.backend.security.JwtAuthenticationFilter;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+
+import org.springframework.http.HttpMethod;
 
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
@@ -47,11 +50,13 @@ public class SecurityConfig {
         this.userDetailsService = userDetailsService;
     }
 
+    // Password encryption
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
 
+    // Authentication provider
     @Bean
     public DaoAuthenticationProvider authenticationProvider(
             PasswordEncoder passwordEncoder) {
@@ -64,6 +69,7 @@ public class SecurityConfig {
         return provider;
     }
 
+    // Authentication manager
     @Bean
     public AuthenticationManager authenticationManager(
             AuthenticationConfiguration configuration) throws Exception {
@@ -71,6 +77,7 @@ public class SecurityConfig {
         return configuration.getAuthenticationManager();
     }
 
+    // CORS configuration
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
 
@@ -84,15 +91,30 @@ public class SecurityConfig {
         );
 
         configuration.setAllowedMethods(
-                List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS")
+                List.of(
+                        "GET",
+                        "POST",
+                        "PUT",
+                        "PATCH",
+                        "DELETE",
+                        "OPTIONS"
+                )
         );
 
         configuration.setAllowedHeaders(
-                List.of("Authorization", "Content-Type", "Accept")
+                List.of(
+                        "Authorization",
+                        "Content-Type",
+                        "Accept"
+                )
         );
 
-        configuration.setExposedHeaders(List.of("Authorization"));
+        configuration.setExposedHeaders(
+                List.of("Authorization")
+        );
+
         configuration.setAllowCredentials(false);
+        configuration.setMaxAge(3600L);
 
         UrlBasedCorsConfigurationSource source =
                 new UrlBasedCorsConfigurationSource();
@@ -102,6 +124,7 @@ public class SecurityConfig {
         return source;
     }
 
+    // Security filter chain
     @Bean
     public SecurityFilterChain securityFilterChain(
             HttpSecurity http,
@@ -109,36 +132,64 @@ public class SecurityConfig {
     ) throws Exception {
 
         http
-            .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-            .csrf(csrf -> csrf.disable())
-            .sessionManagement(session ->
-                    session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+            // Enable CORS
+            .cors(cors ->
+                    cors.configurationSource(corsConfigurationSource())
             )
+
+            // Disable CSRF for REST API
+            .csrf(csrf -> csrf.disable())
+
+            // Stateless JWT authentication
+            .sessionManagement(session ->
+                    session.sessionCreationPolicy(
+                            SessionCreationPolicy.STATELESS
+                    )
+            )
+
+            // Authentication provider
             .authenticationProvider(authenticationProvider)
+
+            // Authorization rules
             .authorizeHttpRequests(auth -> auth
 
+                // Allow CORS preflight requests
+                .requestMatchers(
+                        HttpMethod.OPTIONS,
+                        "/**"
+                ).permitAll()
+
+                // Public authentication endpoints
                 .requestMatchers(
                         "/api/auth/login",
                         "/api/auth/register/passenger",
                         "/api/auth/register/operator"
                 ).permitAll()
 
+                // Administrator management
                 .requestMatchers("/api/auth/admins")
                 .hasRole("ADMINISTRADOR")
 
+                // Current authenticated user
                 .requestMatchers("/api/auth/me")
                 .authenticated()
 
+                // User management
                 .requestMatchers("/api/usuarios/**")
                 .hasRole("ADMINISTRADOR")
 
+                // Operator and administrator permissions
                 .requestMatchers(
                         "/api/pasajeros/**",
                         "/api/reservas/**",
                         "/api/pagos/**"
                 )
-                .hasAnyRole("OPERADOR", "ADMINISTRADOR")
+                .hasAnyRole(
+                        "OPERADOR",
+                        "ADMINISTRADOR"
+                )
 
+                // Administrator-only permissions
                 .requestMatchers(
                         "/api/destinos/**",
                         "/api/actividades/**",
@@ -149,15 +200,20 @@ public class SecurityConfig {
                 )
                 .hasRole("ADMINISTRADOR")
 
+                // Health endpoint
                 .requestMatchers("/api/health")
                 .permitAll()
 
+                // All other API endpoints require authentication
                 .requestMatchers("/api/**")
                 .authenticated()
 
+                // Other routes
                 .anyRequest()
                 .permitAll()
             )
+
+            // JWT filter
             .addFilterBefore(
                     jwtFilter,
                     UsernamePasswordAuthenticationFilter.class
