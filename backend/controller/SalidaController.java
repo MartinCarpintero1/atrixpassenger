@@ -9,7 +9,6 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/salidas")
-@CrossOrigin(origins = "http://localhost:5173")
 public class SalidaController {
 
     private final SalidaService salidaService;
@@ -62,5 +61,13 @@ public class SalidaController {
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void eliminar(@PathVariable Integer id) {
         salidaService.eliminar(id);
+    }
+
+    /** Cambio de estado operativo (Programada, En Curso, Finalizada, Cancelada). */
+    @PatchMapping("/{id}/estado")
+    public Salida cambiarEstado(
+            @PathVariable Integer id,
+            @RequestParam String estado) {
+        return salidaService.cambiarEstado(id, estado);
     }
 }

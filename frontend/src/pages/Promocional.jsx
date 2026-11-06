@@ -53,9 +53,16 @@ function Promocional() {
           <a href="#como-funciona">Cómo funciona</a>
         </nav>
 
-        <Link className="button button-outline header-button" to="/login">
-          Ingresar
-        </Link>
+        <div className="header-actions">
+          {/* Acceso directo al login de administradores y operadores */}
+          <Link className="button button-admin header-button" to="/admin/login">
+            Acceso administración
+          </Link>
+
+          <Link className="button button-outline header-button" to="/login">
+            Ingresar
+          </Link>
+        </div>
       </header>
 
       <main>

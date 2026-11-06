@@ -10,7 +10,6 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/usuarios")
-@CrossOrigin(origins = "http://localhost:5173")
 public class UsuarioController {
 
     private final UsuarioService usuarioService;
@@ -61,5 +60,12 @@ public class UsuarioController {
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void eliminar(@PathVariable Integer id) {
         usuarioService.eliminar(id);
+    }
+
+    @PatchMapping("/{id}/activo")
+    public Usuario cambiarEstado(
+            @PathVariable Integer id,
+            @RequestParam Boolean activo) {
+        return usuarioService.cambiarEstado(id, activo);
     }
 }

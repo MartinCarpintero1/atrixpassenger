@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { Link } from 'react-router-dom'
+import RoleSidebar from '../components/RoleSidebar'
 import '../Admin.css'
 
 const API_URL = '/api/destinos'
@@ -169,28 +169,7 @@ function Destinos() {
 
   return (
     <div className="admin-layout">
-      <aside className="admin-sidebar">
-        <Link to="/" className="admin-brand">
-          <span className="admin-logo-small">A</span>
-          <span>
-            <strong>ATRIX</strong>
-            <small>PASSENGER</small>
-          </span>
-        </Link>
-
-        <p className="admin-menu-label">MENÚ PRINCIPAL</p>
-
-        <nav className="admin-menu">
-          <Link to="/admin">▦ Dashboard</Link>
-          <a className="admin-menu-active" href="#destinos">
-            🗺️ Destinos
-          </a>
-        </nav>
-
-        <div className="admin-sidebar-bottom">
-          <Link to="/admin">← Volver al dashboard</Link>
-        </div>
-      </aside>
+      <RoleSidebar />
 
       <main className="admin-main" id="destinos">
         <header className="admin-topbar">

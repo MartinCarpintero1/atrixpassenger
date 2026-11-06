@@ -15,6 +15,8 @@ function AdminRegister() {
     nombreCompleto: '',
     nombreAgencia: '',
     telefono: '',
+    // Código entregado por la administración (STAFF_REGISTRATION_CODE en Railway).
+    codigoRegistro: '',
   })
 
   const [error, setError] = useState('')
@@ -135,6 +137,22 @@ function AdminRegister() {
               minLength={8}
               required
             />
+          </label>
+
+          <label>
+            Código de alta administrativa
+            <input
+              name="codigoRegistro"
+              type="password"
+              value={form.codigoRegistro}
+              onChange={handleChange}
+              autoComplete="off"
+              required
+            />
+            <small className="auth-hint">
+              Solicitalo a un administrador. Los administradores se dan de alta
+              desde Configuración dentro del panel.
+            </small>
           </label>
 
           <button

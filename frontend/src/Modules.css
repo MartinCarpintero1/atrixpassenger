@@ -1,0 +1,499 @@
+/* ==========================================================
+   Módulos por rol (métricas, ventas, control pasajeros, portal pasajero)
+   Reutiliza la paleta de Admin.css.
+   ========================================================== */
+.module-description {
+  margin: 6px 0 0;
+  color: #718096;
+  font-size: 13px;
+}
+
+.module-actions {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.module-panel {
+  margin-bottom: 22px;
+  padding: 22px;
+  border: 1px solid #e1e7ef;
+  border-radius: 16px;
+  background: #fff;
+}
+
+.module-panel h2 {
+  margin: 0 0 4px;
+  font-size: 17px;
+}
+
+.module-panel > p {
+  margin: 0 0 16px;
+  color: #718096;
+  font-size: 13px;
+}
+
+.stat-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 14px;
+  margin-bottom: 22px;
+}
+
+.stat-card {
+  padding: 18px;
+  border: 1px solid #e1e7ef;
+  border-radius: 14px;
+  background: #fff;
+}
+
+.stat-card span {
+  display: block;
+  color: #718096;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.stat-card strong {
+  display: block;
+  margin-top: 6px;
+  font-size: 24px;
+  color: #0f2747;
+}
+
+.stat-card small {
+  color: #718096;
+  font-size: 12px;
+}
+
+.two-columns {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 22px;
+}
+
+.bar-list {
+  display: grid;
+  gap: 10px;
+}
+
+.bar-row {
+  display: grid;
+  grid-template-columns: 130px 1fr 90px;
+  gap: 10px;
+  align-items: center;
+  font-size: 13px;
+}
+
+.bar-track {
+  height: 10px;
+  border-radius: 99px;
+  background: #eef2f7;
+  overflow: hidden;
+}
+
+.bar-fill {
+  height: 100%;
+  border-radius: 99px;
+  background: linear-gradient(90deg, #1d6fd8, #34a0ff);
+}
+
+.bar-row strong {
+  text-align: right;
+}
+
+.module-form {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.module-form label {
+  display: grid;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #33475b;
+}
+
+.module-form input,
+.module-form select,
+.module-form textarea,
+.module-filter input,
+.module-filter select {
+  min-height: 40px;
+  padding: 0 12px;
+  border: 1px solid #d8e3ee;
+  border-radius: 10px;
+  font: inherit;
+  font-size: 13px;
+  background: #fff;
+}
+
+.module-form textarea {
+  min-height: 80px;
+  padding: 10px 12px;
+}
+
+.module-form .full {
+  grid-column: 1 / -1;
+}
+
+.module-form input:disabled {
+  background: #f4f7fb;
+  color: #718096;
+}
+
+.module-form-actions {
+  grid-column: 1 / -1;
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.module-filter {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  align-items: end;
+  margin-bottom: 16px;
+}
+
+.module-filter label {
+  display: grid;
+  gap: 4px;
+  font-size: 12px;
+  color: #33475b;
+}
+
+.secondary-button {
+  min-height: 40px;
+  padding: 0 16px;
+  border: 1px solid #d8e3ee;
+  border-radius: 10px;
+  background: #fff;
+  color: #0f2747;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.secondary-button:hover {
+  background: #f4f7fb;
+}
+
+.secondary-button:disabled,
+.admin-primary-button:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.alert {
+  margin-bottom: 16px;
+  padding: 11px 14px;
+  border-radius: 10px;
+  font-size: 13px;
+}
+
+.alert-error {
+  background: #fdecec;
+  color: #b42318;
+}
+
+.alert-success {
+  background: #e7f6ec;
+  color: #1b7a3d;
+}
+
+.empty-state {
+  padding: 36px 20px;
+  text-align: center;
+  color: #718096;
+}
+
+.empty-state strong {
+  display: block;
+  margin-bottom: 6px;
+  color: #0f2747;
+  font-size: 15px;
+}
+
+.status-pill {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 99px;
+  background: #eef2f7;
+  color: #33475b;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.status-confirmada,
+.status-pagado,
+.status-completado,
+.status-finalizada {
+  background: #e7f6ec;
+  color: #1b7a3d;
+}
+
+.status-pendiente,
+.status-pago-parcial,
+.status-sin-pagos {
+  background: #fff4e0;
+  color: #9a5b00;
+}
+
+.status-cancelada,
+.status-rechazado,
+.status-reembolsado {
+  background: #fdecec;
+  color: #b42318;
+}
+
+.status-programada,
+.status-en-curso {
+  background: #e6f0fd;
+  color: #1d6fd8;
+}
+
+.data-table-wrapper {
+  overflow-x: auto;
+}
+
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.data-table th {
+  padding: 10px;
+  border-bottom: 1px solid #e1e7ef;
+  color: #718096;
+  font-size: 11px;
+  text-align: left;
+  text-transform: uppercase;
+}
+
+.data-table td {
+  padding: 12px 10px;
+  border-bottom: 1px solid #f0f3f7;
+  vertical-align: top;
+}
+
+.data-table td small {
+  display: block;
+  color: #718096;
+}
+
+.data-table tr.row-done {
+  background: #f5fbf7;
+}
+
+/* --- Portal del pasajero ---------------------------------- */
+.trip-layout {
+  display: grid;
+  grid-template-columns: minmax(260px, 340px) 1fr;
+  gap: 22px;
+  align-items: start;
+}
+
+.trip-list {
+  display: grid;
+  gap: 12px;
+}
+
+.trip-card {
+  display: grid;
+  gap: 6px;
+  width: 100%;
+  padding: 16px;
+  border: 1px solid #e1e7ef;
+  border-radius: 14px;
+  background: #fff;
+  text-align: left;
+  cursor: pointer;
+  font: inherit;
+}
+
+.trip-card:hover,
+.trip-card.selected {
+  border-color: #1d6fd8;
+  box-shadow: 0 0 0 3px rgba(29, 111, 216, 0.12);
+}
+
+.trip-card strong {
+  color: #0f2747;
+  font-size: 15px;
+}
+
+.trip-card small {
+  color: #718096;
+}
+
+.trip-card-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+}
+
+.detail-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 12px 18px;
+  margin-bottom: 18px;
+}
+
+.detail-grid div span {
+  display: block;
+  color: #718096;
+  font-size: 11px;
+  text-transform: uppercase;
+}
+
+.detail-grid div strong {
+  font-size: 14px;
+  color: #0f2747;
+  overflow-wrap: anywhere;
+}
+
+.ticket-preview {
+  border: 1px solid #e1e7ef;
+  border-radius: 14px;
+  overflow: hidden;
+  background: #f4f7fb;
+}
+
+.ticket-preview-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  padding: 12px 14px;
+  border-bottom: 1px solid #e1e7ef;
+  background: #fff;
+}
+
+.ticket-preview-toolbar strong {
+  font-size: 14px;
+}
+
+.ticket-preview iframe {
+  display: block;
+  width: 100%;
+  height: 640px;
+  border: 0;
+}
+
+.ticket-preview-loading {
+  padding: 60px 20px;
+  text-align: center;
+  color: #718096;
+}
+
+.cupo-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 16px;
+}
+
+.cupo-card {
+  display: grid;
+  gap: 10px;
+  padding: 18px;
+  border: 1px solid #e1e7ef;
+  border-radius: 16px;
+  background: #fff;
+}
+
+.cupo-card h3 {
+  margin: 0;
+  font-size: 16px;
+}
+
+.cupo-card p {
+  margin: 0;
+  color: #718096;
+  font-size: 13px;
+}
+
+.cupo-meta {
+  display: flex;
+  justify-content: space-between;
+  font-size: 13px;
+}
+
+.cupo-reserve {
+  display: flex;
+  gap: 8px;
+}
+
+.cupo-reserve input {
+  width: 70px;
+  min-height: 40px;
+  padding: 0 10px;
+  border: 1px solid #d8e3ee;
+  border-radius: 10px;
+}
+
+.sidebar-user {
+  display: grid;
+  gap: 10px;
+}
+
+.sidebar-user-info strong,
+.sidebar-user-info small {
+  display: block;
+}
+
+.sidebar-user-info small {
+  opacity: 0.7;
+  font-size: 11px;
+}
+
+.sidebar-logout {
+  min-height: 36px;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-radius: 10px;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+}
+
+@media (max-width: 1050px) {
+  .two-columns,
+  .trip-layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 700px) {
+  .module-form {
+    grid-template-columns: 1fr;
+  }
+
+  .bar-row {
+    grid-template-columns: 90px 1fr 70px;
+  }
+
+  .ticket-preview iframe {
+    height: 480px;
+  }
+}
+
+@media print {
+  .admin-sidebar,
+  .module-actions,
+  .module-filter,
+  .no-print {
+    display: none !important;
+  }
+
+  .admin-main {
+    margin: 0;
+    padding: 0;
+  }
+}

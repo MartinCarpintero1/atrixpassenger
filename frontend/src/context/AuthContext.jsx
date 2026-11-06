@@ -5,14 +5,14 @@ import {
   useState,
 } from 'react'
 
-import { apiRequest } from '../services/api'
+import { apiRequest, TOKEN_KEY } from '../services/api'
 
 const AuthContext = createContext(null)
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null)
   const [token, setToken] = useState(
-    () => sessionStorage.getItem('atrix_token')
+    () => sessionStorage.getItem(TOKEN_KEY)
   )
   const [loading, setLoading] = useState(true)
 
@@ -32,7 +32,7 @@ export function AuthProvider({ children }) {
 
         setUser(currentUser)
       } catch {
-        sessionStorage.removeItem('atrix_token')
+        sessionStorage.removeItem(TOKEN_KEY)
         setToken(null)
         setUser(null)
       } finally {
@@ -44,7 +44,7 @@ export function AuthProvider({ children }) {
   }, [token])
 
   async function saveAuthentication(response) {
-    sessionStorage.setItem('atrix_token', response.token)
+    sessionStorage.setItem(TOKEN_KEY, response.token)
     setToken(response.token)
     setUser(response.user)
 
@@ -84,8 +84,13 @@ export function AuthProvider({ children }) {
     return saveAuthentication(response)
   }
 
+  /** Refresca el usuario en memoria tras editar el perfil. */
+  function updateUser(nextUser) {
+    setUser(nextUser)
+  }
+
   function logout() {
-    sessionStorage.removeItem('atrix_token')
+    sessionStorage.removeItem(TOKEN_KEY)
     setToken(null)
     setUser(null)
   }
@@ -100,6 +105,7 @@ export function AuthProvider({ children }) {
         logout,
         registerPassenger,
         registerOperator,
+        updateUser,
       }}
     >
       {children}

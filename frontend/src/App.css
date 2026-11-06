@@ -673,3 +673,30 @@
     margin: 0;
   }
 }
+/* Acciones del header: "Acceso administración" + "Ingresar" */
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.button-admin {
+  border-color: var(--navy);
+  background: var(--navy);
+  color: #fff;
+}
+
+.button-admin:hover {
+  filter: brightness(1.15);
+}
+
+@media (max-width: 700px) {
+  .header-actions {
+    gap: 6px;
+  }
+
+  .header-actions .header-button {
+    font-size: 12px;
+    padding: 0 10px;
+  }
+}

@@ -1,7 +1,7 @@
 import { Navigate, Outlet, useLocation } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 
-function ProtectedRoute({ allowedRoles = [] }) {
+function ProtectedRoute({ allowedRoles = [], loginPath = '/login' }) {
   const { user, loading } = useAuth()
   const location = useLocation()
 
@@ -12,7 +12,7 @@ function ProtectedRoute({ allowedRoles = [] }) {
   if (!user) {
     return (
       <Navigate
-        to="/login"
+        to={loginPath}
         replace
         state={{ from: location }}
       />
@@ -23,7 +23,8 @@ function ProtectedRoute({ allowedRoles = [] }) {
     allowedRoles.length > 0 &&
     !allowedRoles.includes(user.role)
   ) {
-    return <Navigate to="/" replace />
+    // Usuario autenticado con otro rol: lo enviamos a su propio panel.
+    return <Navigate to={user.role === 'USUARIO' ? '/mi-cuenta' : '/admin'} replace />
   }
 
   return <Outlet />

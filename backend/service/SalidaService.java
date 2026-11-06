@@ -209,4 +209,16 @@ public class SalidaService {
         // La base de datos verifica las claves foráneas de guía y vehículo.
         // Cuando implementemos esas entidades agregaremos validaciones de negocio.
     }
+
+    /**
+     * Control operativo del viaje (OPERADOR / ADMINISTRADOR):
+     * sólo cambia el estado, sin tocar fechas, cupos ni precios.
+     */
+    @Transactional
+    public Salida cambiarEstado(Integer id, String estado) {
+        validarEstado(estado);
+        Salida salida = buscarPorId(id);
+        salida.setEstadoSalida(estado);
+        return salidaRepository.save(salida);
+    }
 }

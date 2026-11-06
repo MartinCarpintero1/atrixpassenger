@@ -1,6 +1,6 @@
 
 import { useEffect, useMemo, useState } from 'react'
-import { Link } from 'react-router-dom'
+import RoleSidebar from '../components/RoleSidebar'
 import '../Admin.css'
 
 const API_URL = '/api/pasajeros'
@@ -233,61 +233,7 @@ function Pasajeros() {
 
   return (
     <div className="admin-layout">
-      <aside className="admin-sidebar">
-        <div className="admin-brand">
-          <span className="admin-brand-icon">A</span>
-          <div>
-            <strong>Atrix Passenger</strong>
-            <small>Panel administrativo</small>
-          </div>
-        </div>
-
-        <nav className="admin-nav">
-          <span className="admin-nav-label">GENERAL</span>
-
-          <Link to="/admin" className="admin-nav-link">
-            <span>▦</span>
-            Dashboard
-          </Link>
-
-          <span className="admin-nav-label">GESTIÓN TURÍSTICA</span>
-
-          <Link to="/admin/destinos" className="admin-nav-link">
-            <span>🗺️</span>
-            Destinos
-          </Link>
-
-          <Link to="/admin/actividades" className="admin-nav-link">
-            <span>🏞️</span>
-            Actividades
-          </Link>
-
-          <Link to="/admin/salidas" className="admin-nav-link">
-            <span>🚌</span>
-            Salidas
-          </Link>
-
-          <Link to="/admin/guias" className="admin-nav-link">
-            <span>🧭</span>
-            Guías
-          </Link>
-
-          <Link to="/admin/vehiculos" className="admin-nav-link">
-            <span>🚐</span>
-            Vehículos
-          </Link>
-
-          <Link to="/admin/pasajeros" className="admin-nav-link active">
-            <span>👥</span>
-            Pasajeros
-          </Link>
-        </nav>
-
-        <div className="admin-sidebar-footer">
-          <span>Panel de administración</span>
-          <small>Atrix Passenger © 2026</small>
-        </div>
-      </aside>
+      <RoleSidebar />
 
       <main className="admin-main">
         <header className="admin-topbar">

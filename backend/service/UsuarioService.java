@@ -270,4 +270,12 @@ public class UsuarioService {
             );
         }
     }
+
+    /** Habilita o deshabilita una cuenta (no elimina datos). */
+    @Transactional
+    public Usuario cambiarEstado(Integer id, Boolean activo) {
+        Usuario usuario = buscarPorId(id);
+        usuario.setActivo(Boolean.TRUE.equals(activo));
+        return usuarioRepository.save(usuario);
+    }
 }

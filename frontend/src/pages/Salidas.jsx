@@ -1,5 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
+import RoleSidebar from '../components/RoleSidebar'
+import { useAuth } from '../context/AuthContext'
 import '../Admin.css'
 
 const API_URL = '/api/salidas'
@@ -19,6 +21,11 @@ const formularioInicial = {
 }
 
 function Salidas() {
+  // Sólo ADMINISTRADOR crea, edita y elimina viajes.
+  // OPERADOR visualiza y controla el estado operativo.
+  const { user } = useAuth()
+  const esAdmin = user?.role === 'ADMINISTRADOR'
+  const [actualizandoEstado, setActualizandoEstado] = useState(null)
   const [salidas, setSalidas] = useState([])
   const [actividades, setActividades] = useState([])
   const [busqueda, setBusqueda] = useState('')
@@ -211,6 +218,38 @@ function Salidas() {
     }
   }
 
+  async function cambiarEstado(salida, estadoSalida) {
+    if (estadoSalida === salida.estadoSalida) return
+
+    setActualizandoEstado(salida.idSalida)
+    setError('')
+    setMensaje('')
+
+    try {
+      const respuesta = await fetch(
+        `${API_URL}/${salida.idSalida}/estado?estado=${encodeURIComponent(estadoSalida)}`,
+        { method: 'PATCH' }
+      )
+
+      if (!respuesta.ok) {
+        const detalle = await respuesta.json().catch(() => null)
+        throw new Error(detalle?.message || 'No se pudo actualizar el estado.')
+      }
+
+      const actualizada = await respuesta.json()
+      setSalidas((actuales) =>
+        actuales.map((item) =>
+          item.idSalida === actualizada.idSalida ? actualizada : item
+        )
+      )
+      setMensaje(`Estado actualizado a "${estadoSalida}".`)
+    } catch (err) {
+      setError(err.message)
+    } finally {
+      setActualizandoEstado(null)
+    }
+  }
+
   async function eliminarSalida(salida) {
     const confirmar = window.confirm(
       `¿Estás seguro de eliminar la salida de "${salida.actividad?.nombre || 'esta actividad'}"?`
@@ -240,55 +279,27 @@ function Salidas() {
 
   return (
     <div className="admin-layout">
-      <aside className="admin-sidebar">
-        <Link to="/" className="admin-brand">
-          <span className="admin-logo-small">A</span>
-          <span>
-            <strong>ATRIX</strong>
-            <small>PASSENGER</small>
-          </span>
-        </Link>
-
-        <p className="admin-menu-label">MENÚ PRINCIPAL</p>
-
-        <nav className="admin-menu">
-          <Link to="/admin">
-            <span>▦</span> Dashboard
-          </Link>
-
-          <Link to="/admin/destinos">
-            <span>🗺️</span> Destinos
-          </Link>
-
-          <Link to="/admin/actividades">
-            <span>🏞️</span> Actividades
-          </Link>
-
-          <Link to="/admin/salidas" className="admin-menu-active">
-            <span>🚌</span> Salidas
-          </Link>
-        </nav>
-
-        <div className="admin-sidebar-bottom">
-          <Link to="/">← Volver a la web pública</Link>
-        </div>
-      </aside>
+      <RoleSidebar />
 
       <main className="admin-main">
         <header className="admin-topbar">
           <div>
             <p className="admin-eyebrow">GESTIÓN TURÍSTICA</p>
-            <h1>Salidas</h1>
+            <h1>Viajes</h1>
             <p>Programá y administrá las salidas de tus actividades.</p>
           </div>
 
-          <button
-            className="admin-primary-button"
-            onClick={abrirNuevo}
-            disabled={actividades.filter((actividad) => actividad.activo).length === 0}
-          >
-            + Nueva salida
-          </button>
+          {esAdmin ? (
+            <button
+              className="admin-primary-button"
+              onClick={abrirNuevo}
+              disabled={actividades.filter((actividad) => actividad.activo).length === 0}
+            >
+              + Nueva salida
+            </button>
+          ) : (
+            <span className="admin-preview-badge">Control operativo</span>
+          )}
         </header>
 
         <section className="destinos-panel">
@@ -326,7 +337,7 @@ function Salidas() {
             </div>
           )}
 
-          {mostrarFormulario && (
+          {esAdmin && mostrarFormulario && (
             <form className="destinos-form" onSubmit={guardarSalida}>
               <h3>
                 {salidaEditando ? 'Editar salida' : 'Programar nueva salida'}
@@ -538,21 +549,37 @@ function Salidas() {
                       </td>
 
                       <td>
-                        <div className="destinos-actions">
-                          <button
-                            type="button"
-                            onClick={() => abrirEdicion(salida)}
+                        <div className="destinos-row-actions">
+                          <select
+                            className="estado-select"
+                            aria-label="Cambiar estado del viaje"
+                            value={salida.estadoSalida}
+                            disabled={actualizandoEstado === salida.idSalida}
+                            onChange={(event) => cambiarEstado(salida, event.target.value)}
                           >
-                            Editar
-                          </button>
+                            {estados.map((estado) => (
+                              <option key={estado} value={estado}>{estado}</option>
+                            ))}
+                          </select>
 
-                          <button
-                            type="button"
-                            className="destinos-delete-button"
-                            onClick={() => eliminarSalida(salida)}
-                          >
-                            Eliminar
-                          </button>
+                          {esAdmin && (
+                            <>
+                              <button
+                                type="button"
+                                onClick={() => abrirEdicion(salida)}
+                              >
+                                Editar
+                              </button>
+
+                              <button
+                                type="button"
+                                className="destinos-delete-button"
+                                onClick={() => eliminarSalida(salida)}
+                              >
+                                Eliminar
+                              </button>
+                            </>
+                          )}
                         </div>
                       </td>
                     </tr>

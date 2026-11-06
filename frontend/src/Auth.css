@@ -177,3 +177,11 @@
     grid-template-columns: 1fr;
   }
 }
+.auth-hint {
+  display: block;
+  margin-top: 6px;
+  color: #718096;
+  font-size: 11px;
+  font-weight: 400;
+  line-height: 1.4;
+}

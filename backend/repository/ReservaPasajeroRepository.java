@@ -25,4 +25,10 @@ public interface ReservaPasajeroRepository
     long countByReserva_IdReservaAndCheckInRealizadoTrue(
         Integer idReserva
     );
+
+    // Lista de abordaje: todos los pasajeros de las reservas de una salida.
+    List<ReservaPasajero> findByReserva_Salida_IdSalida(Integer idSalida);
+
+    // Viajes de un pasajero vinculado a una cuenta de usuario.
+    List<ReservaPasajero> findByPasajero_IdUsuario(Integer idUsuario);
 }
