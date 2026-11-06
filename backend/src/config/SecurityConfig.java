@@ -1,4 +1,3 @@
-
 package com.atrixpassenger.backend.config;
 
 import com.atrixpassenger.backend.security.CustomUserDetailsService;
@@ -25,7 +24,6 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
-import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -86,17 +84,13 @@ public class SecurityConfig {
 
         CorsConfiguration configuration = new CorsConfiguration();
 
-        String originsValue = (allowedOrigins != null && !allowedOrigins.isBlank())
-                ? allowedOrigins
-                : "https://atrixpassenger.vercel.app";
-
-        List<String> origins = Arrays.stream(originsValue.split(","))
-                .map(String::trim)
-                .map(origin -> origin.replaceAll("/+$", ""))
-                .filter(origin -> !origin.isBlank())
-                .toList();
-
-        configuration.setAllowedOrigins(origins);
+        // Usamos patrones para permitir Vercel (producción y previews) y desarrollo local
+        configuration.setAllowedOriginPatterns(List.of(
+                "https://atrixpassenger.vercel.app",
+                "https://*.vercel.app",
+                "http://localhost:5173",
+                "http://localhost:3000"
+        ));
 
         configuration.setAllowedMethods(
                 List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS")
