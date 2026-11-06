@@ -45,10 +45,9 @@ public class SecurityConfig {
     private final CustomUserDetailsService userDetailsService;
 
     /**
-     * Orígenes permitidos separados por coma. Admite patrones
-     * (ej. https://atrixpassenger-*.vercel.app para previews de Vercel).
+     * Orígenes permitidos leídos directamente desde la variable de entorno CORS_ALLOWED_ORIGINS.
      */
-    @Value("${app.cors.allowed-origins}")
+    @Value("${CORS_ALLOWED_ORIGINS}")
     private String allowedOrigins;
 
     public SecurityConfig(
@@ -84,15 +83,14 @@ public class SecurityConfig {
         CorsConfiguration configuration = new CorsConfiguration();
 
         // Se normalizan los orígenes: sin espacios y sin "/" final
-        // ("https://x.vercel.app/" nunca coincide con el header Origin).
         List<String> origins = Arrays.stream(allowedOrigins.split(","))
                 .map(String::trim)
                 .map(origin -> origin.replaceAll("/+$", ""))
                 .filter(origin -> !origin.isBlank())
                 .toList();
 
-        // allowedOriginPatterns es compatible con allowCredentials(true).
-        configuration.setAllowedOriginPatterns(origins);
+        // Uso de setAllowedOrigins para emparejar exactamente los dominios
+        configuration.setAllowedOrigins(origins);
         configuration.setAllowedMethods(
                 List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(List.of(
@@ -155,13 +153,12 @@ public class SecurityConfig {
                 // Portal del pasajero
                 .requestMatchers("/api/me/**").hasRole(USUARIO)
 
-                // Viajes (salidas): lectura y control de estado para operador,
-                // creación/edición/eliminación sólo administrador.
+                // Viajes (salidas)
                 .requestMatchers(HttpMethod.GET, "/api/salidas/**").hasAnyRole(ADMIN, OPERADOR)
                 .requestMatchers(HttpMethod.PATCH, "/api/salidas/*/estado").hasAnyRole(ADMIN, OPERADOR)
                 .requestMatchers("/api/salidas/**").hasRole(ADMIN)
 
-                // Catálogo (lectura operador, escritura administrador)
+                // Catálogo
                 .requestMatchers(HttpMethod.GET,
                         "/api/destinos/**", "/api/actividades/**",
                         "/api/guias/**", "/api/vehiculos/**").hasAnyRole(ADMIN, OPERADOR)
