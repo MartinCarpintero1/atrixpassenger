@@ -54,6 +54,10 @@ public class Pasajero {
     @Column(name = "nfc_tag_uid", unique = true, length = 100)
     private String nfcTagUid;
 
+    // Cuenta de usuario (rol USUARIO) vinculada al pasajero.
+    @Column(name = "id_usuario")
+    private Integer idUsuario;
+
     @Column(name = "fecha_registro", insertable = false, updatable = false)
     private LocalDateTime fechaRegistro;
 
@@ -174,6 +178,14 @@ public class Pasajero {
 
     public LocalDateTime getFechaRegistro() {
         return fechaRegistro;
+    }
+
+    public Integer getIdUsuario() {
+        return idUsuario;
+    }
+
+    public void setIdUsuario(Integer idUsuario) {
+        this.idUsuario = idUsuario;
     }
 
     public enum TipoDocumento {

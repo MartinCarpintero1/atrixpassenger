@@ -14,4 +14,6 @@ public interface PagoRepository extends JpaRepository<Pago, Integer> {
     List<Pago> findByMetodoPago(String metodoPago);
 
     boolean existsByReserva_IdReserva(Integer idReserva);
+
+    boolean existsByReserva_IdReservaAndEstadoPago(Integer idReserva, String estadoPago);
 }

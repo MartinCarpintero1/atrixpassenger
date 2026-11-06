@@ -27,4 +27,6 @@ public interface ReservaRepository extends JpaRepository<Reserva, Integer> {
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("SELECT r FROM Reserva r WHERE r.idReserva = :id")
     Optional<Reserva> buscarPorIdConBloqueo(@Param("id") Integer id);
+
+    List<Reserva> findByIdUsuarioCreador(Integer idUsuarioCreador);
 }

@@ -10,7 +10,6 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/guias")
-@CrossOrigin(origins = "http://localhost:5173")
 public class GuiaController {
 
     private final GuiaService guiaService;

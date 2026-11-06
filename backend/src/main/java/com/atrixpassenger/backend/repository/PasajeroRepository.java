@@ -18,4 +18,6 @@ public interface PasajeroRepository
             String nombre,
             String apellido
     );
+
+    Optional<Pasajero> findFirstByIdUsuario(Integer idUsuario);
 }
