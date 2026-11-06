@@ -10,7 +10,6 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -76,15 +75,12 @@ public class SecurityConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
 
-        // Se normalizan los orígenes: sin espacios y sin "/" final
-        // ("https://x.vercel.app/" nunca coincide con el header Origin).
         List<String> origins = Arrays.stream(allowedOrigins.split(","))
                 .map(String::trim)
                 .map(origin -> origin.replaceAll("/+$", ""))
                 .filter(origin -> !origin.isBlank())
                 .toList();
 
-        // allowedOriginPatterns es compatible con allowCredentials(true).
         configuration.setAllowedOriginPatterns(origins);
         configuration.setAllowedMethods(
                 List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
@@ -105,8 +101,7 @@ public class SecurityConfig {
     // ---------------------------------------------------------
     @Bean
     public SecurityFilterChain securityFilterChain(
-            HttpSecurity http,
-            DaoAuthenticationProvider authenticationProvider) throws Exception {
+            HttpSecurity http) throws Exception {
 
         http
             .cors(cors -> cors.configurationSource(corsConfigurationSource()))
@@ -115,7 +110,6 @@ public class SecurityConfig {
             .formLogin(form -> form.disable())
             .sessionManagement(session ->
                     session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-            .authenticationProvider(authenticationProvider)
 
             // Respuestas JSON (con cabeceras CORS) para 401 / 403.
             .exceptionHandling(ex -> ex
