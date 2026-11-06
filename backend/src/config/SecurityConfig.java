@@ -1,13 +1,12 @@
+
 package com.atrixpassenger.backend.config;
 
 import com.atrixpassenger.backend.security.CustomUserDetailsService;
 import com.atrixpassenger.backend.security.JwtAuthenticationFilter;
 
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.core.Ordered;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -25,7 +24,6 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
-import org.springframework.web.filter.CorsFilter;
 
 import java.util.Arrays;
 import java.util.List;
@@ -33,7 +31,8 @@ import java.util.List;
 /**
  * Seguridad HTTP: CORS, JWT stateless y permisos por rol.
  *
- * Roles (tabla roles.nombre_rol): ADMINISTRADOR, OPERADOR, USUARIO.
+ * Roles (tabla roles.nombre_rol):
+ * ADMINISTRADOR, OPERADOR, USUARIO.
  */
 @Configuration
 @EnableWebSecurity
@@ -47,10 +46,7 @@ public class SecurityConfig {
     private final JwtAuthenticationFilter jwtFilter;
     private final CustomUserDetailsService userDetailsService;
 
-    /**
-     * Orígenes permitidos leídos directamente desde la variable de entorno CORS_ALLOWED_ORIGINS.
-     */
-    @Value("${CORS_ALLOWED_ORIGINS}")
+    @Value("${CORS_ALLOWED_ORIGINS:https://atrixpassenger.vercel.app}")
     private String allowedOrigins;
 
     public SecurityConfig(
@@ -66,8 +62,12 @@ public class SecurityConfig {
     }
 
     @Bean
-    public DaoAuthenticationProvider authenticationProvider(PasswordEncoder passwordEncoder) {
-        DaoAuthenticationProvider provider = new DaoAuthenticationProvider(userDetailsService);
+    public DaoAuthenticationProvider authenticationProvider(
+            PasswordEncoder passwordEncoder) {
+
+        DaoAuthenticationProvider provider =
+                new DaoAuthenticationProvider(userDetailsService);
+
         provider.setPasswordEncoder(passwordEncoder);
         return provider;
     }
@@ -83,11 +83,11 @@ public class SecurityConfig {
     // ---------------------------------------------------------
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
+
         CorsConfiguration configuration = new CorsConfiguration();
 
-        // Se normalizan los orígenes: sin espacios y sin "/" final
-        String originsValue = (allowedOrigins != null && !allowedOrigins.isBlank()) 
-                ? allowedOrigins 
+        String originsValue = (allowedOrigins != null && !allowedOrigins.isBlank())
+                ? allowedOrigins
                 : "https://atrixpassenger.vercel.app";
 
         List<String> origins = Arrays.stream(originsValue.split(","))
@@ -97,35 +97,39 @@ public class SecurityConfig {
                 .toList();
 
         configuration.setAllowedOrigins(origins);
+
         configuration.setAllowedMethods(
-                List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
-        configuration.setAllowedHeaders(List.of(
-                "Authorization", "Content-Type", "Accept", "Origin",
-                "X-Requested-With", "Cache-Control"));
-        configuration.setExposedHeaders(List.of("Authorization", "Content-Disposition"));
+                List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS")
+        );
+
+        configuration.setAllowedHeaders(
+                List.of(
+                        "Authorization",
+                        "Content-Type",
+                        "Accept",
+                        "Origin",
+                        "X-Requested-With",
+                        "Cache-Control"
+                )
+        );
+
+        configuration.setExposedHeaders(
+                List.of("Authorization", "Content-Disposition")
+        );
+
         configuration.setAllowCredentials(true);
         configuration.setMaxAge(3600L);
 
-        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        UrlBasedCorsConfigurationSource source =
+                new UrlBasedCorsConfigurationSource();
+
         source.registerCorsConfiguration("/**", configuration);
+
         return source;
     }
 
-    /**
-     * Registra el filtro CORS con la máxima prioridad para que se ejecute 
-     * antes de cualquier filtro de seguridad de Spring Security.
-     */
-    @Bean
-    public FilterRegistrationBean<CorsFilter> corsFilter() {
-        FilterRegistrationBean<CorsFilter> bean = new FilterRegistrationBean<>(
-                new CorsFilter(corsConfigurationSource())
-        );
-        bean.setOrder(Ordered.HIGHEST_PRECEDENCE);
-        return bean;
-    }
-
     // ---------------------------------------------------------
-    // Filtros y permisos
+    // Security Filters and Permissions
     // ---------------------------------------------------------
     @Bean
     public SecurityFilterChain securityFilterChain(
@@ -133,84 +137,148 @@ public class SecurityConfig {
             DaoAuthenticationProvider authenticationProvider) throws Exception {
 
         http
-            .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+            .cors(cors ->
+                    cors.configurationSource(corsConfigurationSource())
+            )
+
             .csrf(csrf -> csrf.disable())
+
+            // Deshabilitamos autenticación HTTP Basic y formulario predeterminado.
             .httpBasic(basic -> basic.disable())
             .formLogin(form -> form.disable())
+
+            // JWT: aplicación sin sesiones de servidor.
             .sessionManagement(session ->
-                    session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                    session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+            )
+
             .authenticationProvider(authenticationProvider)
 
-            // Respuestas JSON (con cabeceras CORS) para 401 / 403.
+            // Respuestas JSON para errores de autenticación y autorización.
             .exceptionHandling(ex -> ex
                 .authenticationEntryPoint((request, response, e) ->
-                        writeJson(response, HttpStatus.UNAUTHORIZED,
-                                "Tu sesión no es válida o expiró. Iniciá sesión nuevamente."))
+                        writeJson(
+                                response,
+                                HttpStatus.UNAUTHORIZED,
+                                "Tu sesión no es válida o expiró. Iniciá sesión nuevamente."
+                        )
+                )
                 .accessDeniedHandler((request, response, e) ->
-                        writeJson(response, HttpStatus.FORBIDDEN,
-                                "No tenés permisos para realizar esta acción."))
+                        writeJson(
+                                response,
+                                HttpStatus.FORBIDDEN,
+                                "No tenés permisos para realizar esta acción."
+                        )
+                )
             )
 
             .authorizeHttpRequests(auth -> auth
-                // Preflight CORS
+
+                // Preflight CORS: no requiere autenticación.
                 .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
 
-                // Público
+                // Rutas públicas.
                 .requestMatchers("/api/health", "/error").permitAll()
-                .requestMatchers(HttpMethod.POST,
+
+                .requestMatchers(
+                        HttpMethod.POST,
                         "/api/auth/login",
                         "/api/auth/register/passenger",
-                        "/api/auth/register/operator").permitAll()
+                        "/api/auth/register/operator"
+                ).permitAll()
 
-                // Cuenta propia (todos los roles)
-                .requestMatchers("/api/auth/me", "/api/auth/profile", "/api/auth/password")
-                    .authenticated()
+                // Cuenta propia: todos los roles autenticados.
+                .requestMatchers(
+                        "/api/auth/me",
+                        "/api/auth/profile",
+                        "/api/auth/password"
+                ).authenticated()
 
-                // Alta de personal desde el panel
-                .requestMatchers("/api/auth/staff", "/api/auth/admins").hasRole(ADMIN)
+                // Alta de personal: solamente administrador.
+                .requestMatchers(
+                        "/api/auth/staff",
+                        "/api/auth/admins"
+                ).hasRole(ADMIN)
 
-                // Portal del pasajero
+                // Portal del pasajero.
                 .requestMatchers("/api/me/**").hasRole(USUARIO)
 
-                // Viajes (salidas)
-                .requestMatchers(HttpMethod.GET, "/api/salidas/**").hasAnyRole(ADMIN, OPERADOR)
-                .requestMatchers(HttpMethod.PATCH, "/api/salidas/*/estado").hasAnyRole(ADMIN, OPERADOR)
+                // Viajes (salidas).
+                .requestMatchers(
+                        HttpMethod.GET,
+                        "/api/salidas/**"
+                ).hasAnyRole(ADMIN, OPERADOR)
+
+                .requestMatchers(
+                        HttpMethod.PATCH,
+                        "/api/salidas/*/estado"
+                ).hasAnyRole(ADMIN, OPERADOR)
+
                 .requestMatchers("/api/salidas/**").hasRole(ADMIN)
 
-                // Catálogo
-                .requestMatchers(HttpMethod.GET,
-                        "/api/destinos/**", "/api/actividades/**",
-                        "/api/guias/**", "/api/vehiculos/**").hasAnyRole(ADMIN, OPERADOR)
+                // Catálogo.
                 .requestMatchers(
-                        "/api/destinos/**", "/api/actividades/**",
-                        "/api/guias/**", "/api/vehiculos/**").hasRole(ADMIN)
+                        HttpMethod.GET,
+                        "/api/destinos/**",
+                        "/api/actividades/**",
+                        "/api/guias/**",
+                        "/api/vehiculos/**"
+                ).hasAnyRole(ADMIN, OPERADOR)
 
-                // Gestión operativa
                 .requestMatchers(
-                        "/api/reservas/**", "/api/pasajeros/**",
-                        "/api/reserva-pasajeros/**", "/api/pagos/**",
-                        "/api/operacion/**").hasAnyRole(ADMIN, OPERADOR)
+                        "/api/destinos/**",
+                        "/api/actividades/**",
+                        "/api/guias/**",
+                        "/api/vehiculos/**"
+                ).hasRole(ADMIN)
 
-                // Sólo administrador
+                // Gestión operativa.
                 .requestMatchers(
-                        "/api/metricas/**", "/api/usuarios/**",
-                        "/api/roles/**", "/api/logs/**").hasRole(ADMIN)
+                        "/api/reservas/**",
+                        "/api/pasajeros/**",
+                        "/api/reserva-pasajeros/**",
+                        "/api/pagos/**",
+                        "/api/operacion/**"
+                ).hasAnyRole(ADMIN, OPERADOR)
 
+                // Solamente administrador.
+                .requestMatchers(
+                        "/api/metricas/**",
+                        "/api/usuarios/**",
+                        "/api/roles/**",
+                        "/api/logs/**"
+                ).hasRole(ADMIN)
+
+                // Cualquier otra ruta API requiere autenticación.
                 .requestMatchers("/api/**").authenticated()
+
+                // Rutas fuera de /api.
                 .anyRequest().permitAll()
             )
-            .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
+
+            // Filtro JWT antes del filtro de autenticación estándar.
+            .addFilterBefore(
+                    jwtFilter,
+                    UsernamePasswordAuthenticationFilter.class
+            );
 
         return http.build();
     }
 
+    // ---------------------------------------------------------
+    // JSON Error Response
+    // ---------------------------------------------------------
     private static void writeJson(
             jakarta.servlet.http.HttpServletResponse response,
             HttpStatus status,
             String message) throws java.io.IOException {
+
         response.setStatus(status.value());
         response.setCharacterEncoding("UTF-8");
         response.setContentType(MediaType.APPLICATION_JSON_VALUE);
-        response.getWriter().write("{\"message\":\"" + message + "\"}");
+
+        response.getWriter().write(
+                "{\"message\":\"" + message + "\"}"
+        );
     }
 }
